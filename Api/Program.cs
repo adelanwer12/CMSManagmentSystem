@@ -4,8 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAccessService;
+using DataAccessService.InterFaces;
+using DataService;
+using DataService.DataBaseContexts;
 using loggingService;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,19 +21,20 @@ namespace Api
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            var host =CreateHostBuilder(args).Build();
+            var host = CreateHostBuilder(args).Build();
             using (var scope = host.Services.CreateScope())
             {
+                var service = scope.ServiceProvider;
                 try
                 {
-                    int zero = 0;
-                    int result = 100/ zero;
+                    var seedData = service.GetRequiredService<ISeedData>();
+                    await DbContextInitializer.DataBaseInitialize(seedData);
                 }
-                catch (DivideByZeroException ex)
+                catch (Exception ex)
                 {
-                    Log.Error("An error occurred while seeding database {Error} {StackTrace} {InnerException} {Source}", ex.Message,ex.StackTrace,ex.InnerException,ex.Source);
+                    Log.Error("An error occurred while seeding database {Error} {StackTrace} {InnerException} {Source}", ex.Message, ex.StackTrace, ex.InnerException, ex.Source);
                 }
             }
 
